@@ -1,6 +1,5 @@
 from pathlib import Path
 from os import getenv, path
-from django.conf.global_settings import AUTH_USER_MODEL
 from django.core.management.utils import get_random_secret_key
 import dotenv
 
@@ -114,9 +113,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "static"  # noqa: F811
-MEDIA_URL = "media/"  # noqa: F811
-MEDIA_ROOT = BASE_DIR / "media"  # noqa: F811
+STATIC_ROOT = BASE_DIR / "static"
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 REST_FRAMEWORK = {
@@ -146,8 +145,11 @@ DEFAULT_FROM_EMAIL = getenv("MAIL_FROM_ADDRESS")
 EMAIL_USE_TLS = True
 
 
+DOMAIN: str | None = getenv("DOMAIN")
+SITE_NAME = "fullauth"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-AUTH_USER_MODEL = "users.UserAccount"  # noqa: F811
+AUTH_USER_MODEL = "users.UserAccount"
