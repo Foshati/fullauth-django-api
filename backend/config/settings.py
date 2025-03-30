@@ -4,7 +4,6 @@ from django.conf.global_settings import AUTH_USER_MODEL
 from django.core.management.utils import get_random_secret_key
 import dotenv
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 dotenv_file = BASE_DIR / ".env.local"
@@ -137,9 +136,18 @@ DJOSER = {
     "TOKEN_MODEL": None,
 }
 
+# Email settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = getenv("MAIL_HOST")
+EMAIL_PORT = int(getenv("MAIL_PORT"))
+EMAIL_HOST_USER = getenv("MAIL_USER")
+EMAIL_HOST_PASSWORD = getenv("MAIL_PASSWORD")
+DEFAULT_FROM_EMAIL = getenv("MAIL_FROM_ADDRESS")
+EMAIL_USE_TLS = True
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-AUTH_USER_MODEL = 'users.UserAccount'  # noqa: F811
+AUTH_USER_MODEL = "users.UserAccount"  # noqa: F811
