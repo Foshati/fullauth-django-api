@@ -9,6 +9,8 @@ dotenv_file = BASE_DIR / ".env.local"
 
 if path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
+    
+DEVELOPMENT_MODE = getenv("DEVELOPMENT_MODE", "False") == "True"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -123,7 +125,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 AUTHENTICATION_BACKENDS = [
     "social_core.backends.google.GoogleOAuth2",
-    "social_core.backends.facebook.FacebookOAuth2",
+    "social_core.backends.github.GithubOAuth2",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
@@ -160,12 +162,6 @@ DOMAIN: str | None = getenv("DOMAIN")
 SITE_NAME = "fullauth"
 
 
-CORS_ALLOWED_ORIGINS = getenv(
-    "CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
-).split(",")
-CORS_ALLOW_CREDENTIALS = True
-
-
 AUTH_COOKIE = "access"
 AUTH_COOKIE_MAX_AGE = 60 * 60 * 24
 AUTH_COOKIE_SECURE = getenv("AUTH_COOKIE_SECURE", "True") == "True"
@@ -183,10 +179,16 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 ]
 SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ["first_name", "last_name"]
 
-SOCIAL_AUTH_FACEBOOK_KEY = getenv("FACEBOOK_AUTH_KEY")
-SOCIAL_AUTH_FACEBOOK_SECRET = getenv("FACEBOOK_AUTH_SECRET_KEY")
-SOCIAL_AUTH_FACEBOOK_SCOPE = ["email"]
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {"fields": "email, first_name, last_name"}
+# GitHub OAuth Settings
+SOCIAL_AUTH_GITHUB_KEY = getenv("GITHUB_AUTH_KEY")
+SOCIAL_AUTH_GITHUB_SECRET = getenv("GITHUB_AUTH_SECRET_KEY")
+SOCIAL_AUTH_GITHUB_SCOPE = ["user:email"]
+SOCIAL_AUTH_GITHUB_EXTRA_DATA = ["first_name", "last_name"]
+
+CORS_ALLOWED_ORIGINS = getenv(
+    "CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Default primary key field type
