@@ -1,5 +1,7 @@
 from pathlib import Path
 from os import getenv, path
+import sys
+import dj_database_url
 from django.core.management.utils import get_random_secret_key
 import dotenv
 
@@ -9,7 +11,7 @@ dotenv_file = BASE_DIR / ".env.local"
 
 if path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
-    
+
 DEVELOPMENT_MODE = getenv("DEVELOPMENT_MODE", "False") == "True"
 
 # Quick-start development settings - unsuitable for production
@@ -74,14 +76,19 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if DEVELOPMENT_MODE is True:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
-
+elif len(sys.argv) > 0 and sys.argv[1] != "collectstatic":
+    if getenv("DATABASE_URL", None) is None:
+        raise Exception("DATABASE_URL environment variable not defined")
+    DATABASES = {
+        "default": dj_database_url.parse(getenv("DATABASE_URL")),
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -117,10 +124,35 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "static"
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+if DEVELOPMENT_MODE is True:
+    STATIC_URL = "static/"
+    STATIC_ROOT = BASE_DIR / "static"
+    MEDIA_URL = "media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+else:
+    # Minio settings (S3 compatible)
+    AWS_ACCESS_KEY_ID = getenv("MINIO_ACCESS_KEY")
+    AWS_SECRET_ACCESS_KEY = getenv("MINIO_SECRET_KEY")
+    AWS_STORAGE_BUCKET_NAME = getenv("MINIO_BUCKET_NAME")
+    AWS_S3_ENDPOINT_URL = getenv("MINIO_ENDPOINT_URL")
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    AWS_DEFAULT_ACL = "public-read"
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_FILE_OVERWRITE = False
+    
+    # Define storage locations
+    AWS_LOCATION = "static"
+    AWS_MEDIA_LOCATION = "media"
+    
+    # Storage configurations
+    STORAGES = {
+        "default": {"BACKEND": "custom_storages.MediaStorage"},
+        "staticfiles": {"BACKEND": "custom_storages.StaticStorage"},
+    }
+    
+    # URLs for static and media files
+    STATIC_URL = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/"
+    MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{AWS_MEDIA_LOCATION}/"
 
 
 AUTHENTICATION_BACKENDS = [
@@ -146,6 +178,7 @@ DJOSER = {
     "PASSWORD_RESET_CONFIRM_RETYPE": True,
     "TOKEN_MODEL": None,
     "SOCIAL_AUTH_ALLOWED_REDIRECT_URIS": getenv("REDIRECT_URLS").split(","),
+    
 }
 
 # Email settings
